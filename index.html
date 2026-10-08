@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f2f5f1">
+  <meta name="description" content="Convert HTML and CSS to PNG, JPEG, WEBP, BMP and SVG images.">
+  <title>HTML/CSS to Image</title>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("html-css-image-theme");
+      document.documentElement.dataset.theme = savedTheme === "light" || savedTheme === "dark"
+        ? savedTheme
+        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch {
+      document.documentElement.dataset.theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div>
+          <div class="brand-name">mohamed<span>techturf</span></div>
+          <div class="brand-subtitle">HTML / CSS → Image Converter</div>
+        </div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme" title="Switch theme">
+        <span id="themeIcon" aria-hidden="true">◐</span>
+        <span id="themeLabel">Theme</span>
+      </button>
+    </header>
+
+    <main class="workspace">
+      <section class="hero">
+        <div>
+          <span class="eyebrow">IMAGE WORKSPACE</span>
+          <h1>HTML / CSS to Image</h1>
+          <p>Prepare a page or a single element for export.</p>
+        </div>
+        <button class="ghost-btn" id="loadDemoBtn" type="button">Load demo</button>
+      </section>
+
+      <section class="grid">
+        <aside class="panel controls-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Source</h2>
+              <span>Bring your files or start from the demo.</span>
+            </div>
+          </div>
+
+          <div class="dropzone" id="htmlDropzone" tabindex="0" role="button" aria-label="Upload HTML file">
+            <input id="htmlInput" type="file" accept=".html,.htm,.xhtml,.txt,text/html,application/xhtml+xml,text/plain" hidden>
+            <div class="drop-icon">&lt;/&gt;</div>
+            <strong id="htmlFileName">Choose HTML file</strong>
+            <span>HTML, XHTML, or plain-text markup</span>
+          </div>
+
+          <div class="dropzone compact" id="cssDropzone" tabindex="0" role="button" aria-label="Upload optional CSS file">
+            <input id="cssInput" type="file" accept=".css,.txt,text/css,text/plain" hidden>
+            <div class="drop-icon css">#</div>
+            <strong id="cssFileName">Optional CSS file</strong>
+            <span>CSS or plain-text stylesheet</span>
+          </div>
+
+          <div class="source-actions">
+            <button class="secondary-btn" id="clearBtn" type="button">Clear files</button>
+          </div>
+
+          <div class="control-section">
+            <div class="section-title">Capture</div>
+            <label class="segmented-label">Capture target</label>
+            <div class="segmented" role="group" aria-label="Capture target">
+              <button class="segment active" data-target="viewport" type="button">Preview</button>
+              <button class="segment" data-target="element" type="button">Selected element</button>
+            </div>
+            <div class="hint">Use <b>Select element</b> in the preview toolbar, then click any element to make it the export target.</div>
+          </div>
+
+          <div class="control-section">
+            <div class="section-title">Output</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="formatSelect">Format</label>
+                <select id="formatSelect">
+                  <option value="png">PNG — best for transparency</option>
+                  <option value="jpeg">JPEG — smaller photos</option>
+                  <option value="webp" selected>WEBP — modern &amp; compact</option>
+                  <option value="bmp">BMP — uncompressed bitmap</option>
+                  <option value="svg">SVG — PNG image wrapper</option>
+                </select>
+              </div>
+              <div class="field narrow">
+                <label for="scaleSelect">Scale</label>
+                <select id="scaleSelect">
+                  <option value="1">1×</option>
+                  <option value="2" selected>2×</option>
+                  <option value="3">3×</option>
+                  <option value="4">4×</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="switch-row">
+              <span>
+                <strong>Transparent background</strong>
+                <small>Preserve transparent pixels outside the selected content.</small>
+              </span>
+              <input id="transparentToggle" type="checkbox" checked>
+              <span class="switch" aria-hidden="true"></span>
+            </label>
+
+            <div class="field" id="backgroundField">
+              <label for="backgroundColor">Background color</label>
+              <div class="color-control">
+                <input id="backgroundColor" type="color" value="#ffffff">
+                <input id="backgroundHex" type="text" value="#ffffff" maxlength="7" spellcheck="false">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="qualityRange">Quality <span id="qualityValue">92%</span></label>
+              <input id="qualityRange" type="range" min="40" max="100" value="92">
+              <small class="field-hint">Used for JPEG and WEBP</small>
+            </div>
+          </div>
+
+          <button class="download-btn" id="downloadBtn" type="button" disabled>
+            <span>Export image</span>
+            <span class="download-arrow">↓</span>
+          </button>
+
+          <div class="status" id="status" aria-live="polite">
+            <span class="status-dot"></span>
+            <span id="statusText">Upload an HTML file to begin.</span>
+          </div>
+        </aside>
+
+        <section class="panel preview-panel">
+          <div class="panel-heading preview-heading">
+            <div>
+              <h2>Preview</h2>
+              <span id="selectionLabel">Nothing selected</span>
+            </div>
+            <div class="preview-tools">
+              <button class="tool-btn active" id="selectToolBtn" type="button">Select element</button>
+              <button class="tool-btn" id="refreshBtn" type="button" title="Refresh preview">↻</button>
+            </div>
+          </div>
+          <div class="preview-stage" id="previewStage">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-art"><span>&lt;</span><span>HTML</span><span>/&gt;</span></div>
+              <h3>Your design will appear here</h3>
+              <p>Choose an HTML or text file to build your preview.</p>
+            </div>
+            <iframe id="previewFrame" title="HTML preview" sandbox="allow-same-origin"></iframe>
+            <div class="select-overlay" id="selectOverlay" hidden></div>
+          </div>
+          <div class="preview-footer">
+            <span id="dimensionLabel">0 × 0 px</span>
+            <span class="alpha-hint" id="alphaHint" hidden><i aria-hidden="true"></i> Checkerboard shows transparency</span>
+            <span id="selectedPath" class="mono"></span>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Made by <strong>mohamedtechturf</strong></span>
+      <span>Files stay in your browser — nothing is uploaded to a server.</span>
+    </footer>
+  </div>
+
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
