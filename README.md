@@ -1,4 +1,4 @@
-# HTML/CSS to Image — MohamedTechTurf
+# HTML/CSS to Image
 
 A client-side HTML and CSS image converter built with plain HTML, CSS and JavaScript.
 
